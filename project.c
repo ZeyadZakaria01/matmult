@@ -14,7 +14,7 @@ int main()
 {
     // int l = 3, m = 4, n = 5;
     int l = 200, m = 500, n = 160;
-    // int l = 1000, m = 1000, n = 2000;
+    // int l = 2000, m = 1000, n = 2000;
     int *A = (int *)malloc(l * m * sizeof(int));
     int *B = (int *)malloc(m * n * sizeof(int));
     int *C = (int *)malloc(l * n * sizeof(int));
@@ -23,29 +23,34 @@ int main()
     populateMatrix(B, m, n);
 
     // Calculate the time taken
-    clock_t t;
-    double time_taken;
+    // clock_t t;
+    // double time_taken;
+    struct timespec start, finish;
+    double elapsed;
 
-    t = clock();
+    clock_gettime(CLOCK_MONOTONIC, &start);
     matmult(A, B, C, l, m, n);
-    t = clock() - t;
-    time_taken = ((double)t) / CLOCKS_PER_SEC; // in seconds
-    printf("matmult took %f seconds to execute \n", time_taken);
-    printMatrices(A, B, C, l, m, n);
+    clock_gettime(CLOCK_MONOTONIC, &finish);
+    elapsed = (finish.tv_sec - start.tv_sec);
+    elapsed += (finish.tv_nsec - start.tv_nsec) / 1000000000.0;
+    printf("matmult took %f seconds to execute \n", elapsed);
+    // printMatrices(A, B, C, l, m, n);
 
-    t = clock();
+    clock_gettime(CLOCK_MONOTONIC, &start);
     matmult_v1(A, B, C, l, m, n);
-    t = clock() - t;
-    time_taken = ((double)t) / CLOCKS_PER_SEC; // in seconds
-    printf("matmult_v1 took %f seconds to execute \n", time_taken);
-    printMatrices(A, B, C, l, m, n);
+    clock_gettime(CLOCK_MONOTONIC, &finish);
+    elapsed = (finish.tv_sec - start.tv_sec);
+    elapsed += (finish.tv_nsec - start.tv_nsec) / 1000000000.0;
+    printf("matmult_v1 took %f seconds to execute \n", elapsed);
+    // printMatrices(A, B, C, l, m, n);
 
-    t = clock();
+    clock_gettime(CLOCK_MONOTONIC, &start);
     matmult_v2(A, B, C, l, m, n);
-    t = clock() - t;
-    time_taken = ((double)t) / CLOCKS_PER_SEC; // in seconds
-    printf("matmult_v2 took %f seconds to execute \n", time_taken);
-    printMatrices(A, B, C, l, m, n);
+    clock_gettime(CLOCK_MONOTONIC, &finish);
+    elapsed = (finish.tv_sec - start.tv_sec);
+    elapsed += (finish.tv_nsec - start.tv_nsec) / 1000000000.0;
+    printf("matmult_v2 took %f seconds to execute \n", elapsed);
+    // printMatrices(A, B, C, l, m, n);
 
     free(A);
     free(B);
@@ -81,12 +86,12 @@ void printMatrix(int *X, int nrow, int ncol)
 
 void printMatrices(int *A, int *B, int *C, int l, int m, int n)
 {
-    // printf("A=\n");
-    // printMatrix(A, l, m);
+    printf("A=\n");
+    printMatrix(A, l, m);
 
-    // printf("B=\n");
-    // printMatrix(B, m, n);
+    printf("B=\n");
+    printMatrix(B, m, n);
 
-    // printf("C=\n");
-    // printMatrix(C, l, n);
+    printf("C=\n");
+    printMatrix(C, l, n);
 }

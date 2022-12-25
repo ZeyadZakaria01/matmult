@@ -26,22 +26,16 @@ void matmult(int *A, int *B, int *C, int l, int m, int n)
 
 /*
  * Arguments to pass it to routines of threads
- *      pointers to 3 matrices A, B & C
- *      size of the 3 matrices
  *      idx of row & column to be printed
  */
-
-typedef struct arguments
+typedef struct iterator
 {
-    int *A, *B, *C;
-    int i, j, l, n, m;
-} arguments;
+    int i, j, l;
+} iterator;
 
-arguments *get_arguments_ptr(int *A, int *B, int *C, int l, int m, int n, int i, int j)
+iterator *get_iterator_ptr(int i, int j)
 {
-    arguments *args = malloc(sizeof(arguments));
-    args->A = A, args->B = B, args->C = C;
-    args->l = l, args->n = n, args->m = m;
+    iterator *args = malloc(sizeof(iterator));
     args->i = i, args->j = j;
     return args;
 }
@@ -53,13 +47,16 @@ arguments *get_arguments_ptr(int *A, int *B, int *C, int l, int m, int n, int i,
  *     B has m rows and n cols
  *     C has l rows and n cols
  */
+int *A_v1, *B_v1, *C_v1;
+int l_v1, m_v1, n_v1;
+
 void *routine_v1(void *arg)
 {
-    arguments args = *(arguments *)arg;
+    iterator args = *(iterator *)arg;
     int sum = 0;
-    for (int k = 0; k < args.m; k++)
-        sum += Item(args.A, args.i, k, args.m) * Item(args.B, k, args.j, args.n);
-    Item(args.C, args.i, args.j, args.n) = sum;
+    for (int k = 0; k < m_v1; k++)
+        sum += Item(A_v1, args.i, k, m_v1) * Item(B_v1, k, args.j, n_v1);
+    Item(C_v1, args.i, args.j, n_v1) = sum;
     pthread_exit(arg);
 }
 
@@ -67,11 +64,14 @@ void matmult_v1(int *A, int *B, int *C, int l, int m, int n)
 {
     pthread_t th[l][n];
 
+    A_v1 = A, B_v1 = B, C_v1 = C;
+    l_v1 = l, m_v1 = m, n_v1 = n;
+
     for (int i = 0; i < l; i++)
     {
         for (int j = 0; j < n; j++)
         {
-            arguments *args = get_arguments_ptr(A, B, C, l, m, n, i, j);
+            iterator *args = get_iterator_ptr(i, j);
             if (pthread_create(&th[i][j], NULL, &routine_v1, args) != 0)
             {
                 printf("args=%p\n[%d][%d]: ", args, i, j);
@@ -84,7 +84,7 @@ void matmult_v1(int *A, int *B, int *C, int l, int m, int n)
     {
         for (int j = 0; j < n; j++)
         {
-            arguments *args;
+            iterator *args;
             if (pthread_join(th[i][j], (void **)&args) != 0)
             {
                 perror("Failed to join thread\n");
@@ -102,16 +102,18 @@ void matmult_v1(int *A, int *B, int *C, int l, int m, int n)
  *     B has m rows and n cols
  *     C has l rows and n cols
  */
+int *A_v2, *B_v2, *C_v2;
+int l_v2, m_v2, n_v2;
 
 void *routine_v2(void *arg)
 {
-    arguments args = *(arguments *)arg;
-    for (int j = 0; j < args.n; j++)
+    iterator args = *(iterator *)arg;
+    for (int j = 0; j < n_v2; j++)
     {
         int sum = 0;
-        for (int k = 0; k < args.m; k++)
-            sum += Item(args.A, args.i, k, args.m) * Item(args.B, k, j, args.n);
-        Item(args.C, args.i, j, args.n) = sum;
+        for (int k = 0; k < m_v2; k++)
+            sum += Item(A_v2, args.i, k, m_v2) * Item(B_v2, k, j, n_v2);
+        Item(C_v2, args.i, j, n_v2) = sum;
     }
     pthread_exit(arg);
 }
@@ -119,10 +121,13 @@ void matmult_v2(int *A, int *B, int *C, int l, int m, int n)
 {
     pthread_t th[l];
 
+    A_v2 = A, B_v2 = B, C_v2 = C;
+    l_v2 = l, m_v2 = m, n_v2 = n;
+
     for (int i = 0; i < l; i++)
     {
 
-        arguments *args = get_arguments_ptr(A, B, C, l, m, n, i, 0);
+        iterator *args = get_iterator_ptr(i, 0);
         if (pthread_create(&th[i], NULL, &routine_v2, args) != 0)
         {
             printf("args=%p\n[%d]: ", args, i);
@@ -133,7 +138,7 @@ void matmult_v2(int *A, int *B, int *C, int l, int m, int n)
 
     for (int i = 0; i < l; i++)
     {
-        arguments *args;
+        iterator *args;
         if (pthread_join(th[i], (void **)&args) != 0)
         {
             perror("Failed to join thread\n");
