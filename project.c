@@ -13,8 +13,9 @@ void printMatrix(int *X, int nrow, int ncol);
 int main()
 {
     int l = 3, m = 4, n = 5;
-    // int l = 200, m = 500, n = 160;
+    // int l = 200, m = 50000, n = 160;
     // int l = 2000, m = 1000, n = 2000;
+
     int *A = (int *)malloc(l * m * sizeof(int));
     int *B = (int *)malloc(m * n * sizeof(int));
     int *C = (int *)malloc(l * n * sizeof(int));
@@ -22,9 +23,6 @@ int main()
     populateMatrix(A, l, m);
     populateMatrix(B, m, n);
 
-    // Calculate the time taken
-    // clock_t t;
-    // double time_taken;
     struct timespec start, finish;
     double elapsed;
 
